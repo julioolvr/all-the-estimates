@@ -7,10 +7,6 @@ import schema from './schema'
 const PORT = 3000
 const app = express()
 
-app.get('/', (req, res) => {
-  res.send('Hello world!')
-})
-
 const GRAPHQL_PATH = '/graphql'
 app.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress({ schema }))
 app.use('/graphiql', graphiqlExpress({ endpointURL: GRAPHQL_PATH }))

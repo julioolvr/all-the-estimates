@@ -1,8 +1,10 @@
 import { makeExecutableSchema } from 'graphql-tools'
+import Room from './models/Room'
 
 const schemaDef = `
 type Room {
   id: ID,
+  key: String,
   participants: [Participant],
   votes: [Vote]
 }
@@ -18,7 +20,7 @@ type Vote {
 }
 
 type Query {
-  room(id: ID!): Room
+  room(key: String!): Room
 }
 
 schema {
@@ -28,12 +30,8 @@ schema {
 
 const resolvers = {
   Query: {
-    room(_, { id }) {
-      return {
-        id: id,
-        participants: [{ id: 1 }, { id: 2 }],
-        votes: [{ participant: { id: 2 }, value: 5 }]
-      }
+    room(_, { key }) {
+      return Room.findOrCreateByKey(key)
     }
   },
   Participant: {
