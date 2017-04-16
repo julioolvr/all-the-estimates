@@ -10,7 +10,7 @@ class Room {
     public id: string,
     public key: string,
     public participants: Array<Participant>,
-    public votes: Array<any>
+    public votes: Array<Vote>
   ) {}
 
   async addParticipant(name: string): Promise<Participant> {
@@ -47,6 +47,18 @@ class Room {
   }
 
   async vote(voterName: string, value: number): Promise<Vote> {
+    const existingVote = this.findVoteForName(voterName)
+
+    if (existingVote) {
+      existingVote.value = value
+      await this.updateVote(voterName, value)
+      return existingVote
+    } else {
+      return this.registerNewVote(voterName, value)
+    }
+  }
+
+  async registerNewVote(voterName: string, value: number) {
     const participant = this.participants.find(participant => participant.name === voterName)
     const vote = new Vote(participant, value)
     this.votes.push(vote)
@@ -61,10 +73,33 @@ class Room {
 
       collection.update(
         { _id: this.id },
-        { $push: { votes: { voterName, value } } },
+        { $push: { votes: vote.toRecord() } },
         (err, result) => err ? reject(err) : resolve(vote)
       )
     })
+  }
+
+  async updateVote(voterName: string, newValue: number): Promise<Vote> {
+    return new Promise<Vote>((resolve, reject) => {
+      const votes = this.votes
+      const vote = votes.find(vote => vote.participant.name === voterName)
+      vote.value = newValue
+
+      collection.findOne(
+        { _id: this.id, 'votes.voterName': voterName },
+        (err, res) => console.log('updateVote find', err, res, voterName)
+      )
+
+      collection.update(
+        { _id: this.id },
+        { $set: { votes: votes.map(vote => vote.toRecord()) } },
+        (err, result) => (console.log('updateVote', err, result), err ? reject(err) : resolve(vote))
+      )
+    })
+  }
+
+  findVoteForName(voterName: string): Vote | undefined {
+    return this.votes.find(vote => vote.participant.name === voterName)
   }
 
   async resetVotes(): Promise<void> {
@@ -73,7 +108,7 @@ class Room {
     return new Promise<void>((resolve, reject) => {
       collection.update(
         { _id: this.id },
-        { votes: [] },
+        { $set: { votes: [] } },
         err => err ? reject(err) : resolve()
       )
     })

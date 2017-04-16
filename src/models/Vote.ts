@@ -10,6 +10,13 @@ class Vote {
     const participant = participants.find(participant => participant.name === result.voterName)
     return new Vote(participant, result.value)
   }
+
+  toRecord() {
+    return {
+      voterName: this.participant.name,
+      value: this.value
+    }
+  }
 }
 
 export default Vote
