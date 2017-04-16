@@ -1,4 +1,6 @@
-class Participant {
+import IParticipant from '../../../common/interfaces/IParticipant'
+
+class Participant implements IParticipant {
   constructor(
     public name: string
   ) {}
