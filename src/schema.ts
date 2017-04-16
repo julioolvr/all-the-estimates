@@ -41,6 +41,7 @@ type Query {
 
 type Mutation {
   vote(roomKey: String!, voterName: String!, value: Int!): Vote
+  reset(roomKey: String!): Room
 }
 
 type Subscription {
@@ -64,6 +65,11 @@ const resolvers = {
     async vote(_, { roomKey, voterName, value }) {
       const room = await Room.findByKey(roomKey)
       return room.vote(voterName, value)
+    },
+    async reset(_, { roomKey }) {
+      const room = await Room.findByKey(roomKey)
+      await room.resetVotes()
+      return room
     }
   },
   RoomEvent: {

@@ -67,6 +67,18 @@ class Room {
     })
   }
 
+  async resetVotes(): Promise<void> {
+    this.votes = []
+
+    return new Promise<void>((resolve, reject) => {
+      collection.update(
+        { _id: this.id },
+        { votes: [] },
+        err => err ? reject(err) : resolve()
+      )
+    })
+  }
+
   static fromResult(result): Room {
     const participants = result.participants.map(Participant.fromResult)
     const votes = result.votes.map(result => Vote.fromResult(result, participants))
