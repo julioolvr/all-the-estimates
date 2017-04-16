@@ -23,8 +23,18 @@ type Query {
   room(key: String!): Room
 }
 
+type Mutation {
+  joinRoom(roomKey: String!, voterName: String!): Room
+}
+
+type Subscription {
+  onParticipantJoined(roomKey: String!): Participant
+}
+
 schema {
-  query: Query
+  query: Query,
+  mutation: Mutation,
+  subscription: Subscription
 }
 `
 
@@ -34,12 +44,11 @@ const resolvers = {
       return Room.findOrCreateByKey(key)
     }
   },
-  Participant: {
-    id({ id }) {
-      return id
-    },
-    name({ id }) {
-      return `someone ${id}`
+  Mutation: {
+    async joinRoom(_, { roomKey, voterName }) {
+      const room = await Room.findOrCreateByKey(roomKey)
+      await room.addParticipant(voterName)
+      return room
     }
   }
 }

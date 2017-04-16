@@ -1,4 +1,6 @@
 import db from '../db'
+import Participant from './Participant'
+import pubsub from '../pubsub'
 
 const collection = db.collection('rooms')
 
@@ -6,9 +8,29 @@ class Room {
   constructor(
     public id: string,
     public key: string,
-    public participants: Array<any>,
+    public participants: Array<Participant>,
     public votes: Array<any>
   ) {}
+
+  async addParticipant(name: string): Promise<Participant> {
+    const participant = new Participant(name)
+    this.participants.push(participant)
+
+    return new Promise<Participant>((resolve, reject) => {
+      collection.update(
+        { _id: this.id },
+        { $push: { participants: participant } },
+        (err, result) => err ? reject(err) : resolve(participant)
+      )
+    }).then(participant => {
+      pubsub.publish('onParticipantJoined', {
+        roomKey: this.key,
+        onParticipantJoined: participant
+      })
+
+      return participant
+    })
+  }
 
   static fromResult(result): Room {
     return new Room(
