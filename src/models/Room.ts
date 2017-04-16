@@ -1,6 +1,7 @@
 import db from '../db'
-import Participant from './Participant'
 import pubsub from '../pubsub'
+import Participant from './Participant'
+import Vote from './Vote'
 
 const collection = db.collection('rooms')
 
@@ -45,12 +46,36 @@ class Room {
     return this.addParticipant(name)
   }
 
+  async vote(voterName: string, value: number): Promise<Vote> {
+    const participant = this.participants.find(participant => participant.name === voterName)
+    const vote = new Vote(participant, value)
+    this.votes.push(vote)
+
+    return new Promise<Vote>((resolve, reject) => {
+      pubsub.publish('onRoomEvent', {
+        roomKey: this.key,
+        onRoomEvent: {
+          vote
+        }
+      })
+
+      collection.update(
+        { _id: this.id },
+        { $push: { votes: { voterName, value } } },
+        (err, result) => err ? reject(err) : resolve(vote)
+      )
+    })
+  }
+
   static fromResult(result): Room {
+    const participants = result.participants.map(Participant.fromResult)
+    const votes = result.votes.map(result => Vote.fromResult(result, participants))
+
     return new Room(
       result._id,
       result.key,
-      result.participants,
-      result.votes
+      participants,
+      votes
     )
   }
 

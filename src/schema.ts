@@ -39,12 +39,17 @@ type Query {
   room(key: String!): Room
 }
 
+type Mutation {
+  vote(roomKey: String!, voterName: String!, value: Int!): Vote
+}
+
 type Subscription {
   onRoomEvent(roomKey: String!, voterName: String!): RoomEvent
 }
 
 schema {
   query: Query,
+  mutation: Mutation,
   subscription: Subscription
 }
 `
@@ -53,6 +58,12 @@ const resolvers = {
   Query: {
     room(_, { key }) {
       return Room.findOrCreateByKey(key)
+    }
+  },
+  Mutation: {
+    async vote(_, { roomKey, voterName, value }) {
+      const room = await Room.findByKey(roomKey)
+      return room.vote(voterName, value)
     }
   },
   RoomEvent: {
