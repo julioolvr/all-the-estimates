@@ -9,7 +9,7 @@ import pubsub from './pubsub'
 import schema from './schema'
 import Room from './models/Room'
 
-const PORT = 3000
+const PORT = 8000
 
 const app = express()
 const server = createServer(app)
