@@ -19,21 +19,32 @@ type Vote {
   value: Int
 }
 
+enum ParticipantEventType {
+  JOINED
+  LEFT
+}
+
+type ParticipantEvent {
+  type: ParticipantEventType,
+  participant: Participant
+}
+
+type VoteEvent {
+  vote: Vote
+}
+
+union RoomEvent = ParticipantEvent | VoteEvent
+
 type Query {
   room(key: String!): Room
 }
 
-type Mutation {
-  joinRoom(roomKey: String!, voterName: String!): Room
-}
-
 type Subscription {
-  onParticipantJoined(roomKey: String!): Participant
+  onRoomEvent(roomKey: String!, voterName: String!): RoomEvent
 }
 
 schema {
   query: Query,
-  mutation: Mutation,
   subscription: Subscription
 }
 `
@@ -44,11 +55,17 @@ const resolvers = {
       return Room.findOrCreateByKey(key)
     }
   },
-  Mutation: {
-    async joinRoom(_, { roomKey, voterName }) {
-      const room = await Room.findOrCreateByKey(roomKey)
-      await room.addParticipant(voterName)
-      return room
+  RoomEvent: {
+    __resolveType(obj, context, info) {
+      if (obj.participant) {
+        return 'ParticipantEvent'
+      }
+
+      if (obj.vote) {
+        return 'VoteEvent'
+      }
+
+      return null
     }
   }
 }

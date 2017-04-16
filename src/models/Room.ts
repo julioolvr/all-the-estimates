@@ -23,13 +23,26 @@ class Room {
         (err, result) => err ? reject(err) : resolve(participant)
       )
     }).then(participant => {
-      pubsub.publish('onParticipantJoined', {
+      pubsub.publish('onRoomEvent', {
         roomKey: this.key,
-        onParticipantJoined: participant
+        onRoomEvent: {
+          type: 'JOINED',
+          participant
+        }
       })
 
       return participant
     })
+  }
+
+  async addParticipantIfNew(name: string): Promise<Participant> {
+    const participant = this.participants.find(participant => participant.name === name)
+
+    if (participant) {
+      return participant
+    }
+
+    return this.addParticipant(name)
   }
 
   static fromResult(result): Room {
