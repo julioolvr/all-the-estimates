@@ -15,19 +15,16 @@ class Room implements IRoom {
   ) {}
 
   async addParticipant(name: string): Promise<Participant> {
-    console.log('Room#addParticipant', name)
     const participant = new Participant(name)
     this.participants.push(participant)
 
     return new Promise<Participant>((resolve, reject) => {
-      console.log('Adding participant...')
       collection.update(
         { _id: this.id },
         { $push: { participants: participant } },
         (err, result) => err ? reject(err) : resolve(participant)
       )
     }).then(participant => {
-      console.log('Added participant', participant)
       pubsub.publish('onRoomEvent', {
         roomKey: this.key,
         onRoomEvent: {
@@ -89,15 +86,10 @@ class Room implements IRoom {
       const vote = votes.find(vote => vote.participant.name === voterName)
       vote.value = newValue
 
-      collection.findOne(
-        { _id: this.id, 'votes.voterName': voterName },
-        (err, res) => console.log('updateVote find', err, res, voterName)
-      )
-
       collection.update(
         { _id: this.id },
         { $set: { votes: votes.map(vote => vote.toRecord()) } },
-        (err, result) => (console.log('updateVote', err, result), err ? reject(err) : resolve(vote))
+        (err, result) => err ? reject(err) : resolve(vote)
       )
     })
   }
