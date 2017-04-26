@@ -1,5 +1,5 @@
 interface IParticipant {
-  name: string
+  name: string;
 }
 
 export default IParticipant

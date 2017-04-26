@@ -18,8 +18,8 @@ const subscriptionManager = new SubscriptionManager({
   schema,
   pubsub,
   setupFunctions: {
-    onParticipantJoined: (options, args) => ({
-      onParticipantJoined: {
+    onRoomEvent: (options, args) => ({
+      onRoomEvent: {
         filter: payload => args.roomKey === payload.roomKey
       }
     })
@@ -44,13 +44,13 @@ server.listen(PORT, () => {
 
         // TODO: Validation
         // TODO: Try not to depend on variables (parse the query?)
-        const { roomKey, voterName } = message.variables
+        const { roomKey, participantName } = message.variables
         const room = await Room.findOrCreateByKey(roomKey)
 
         // TODO: Check what's best when participant already present
         // TODO: Remove participant on unsubscribe somehow
         // (maybe associate participant to subscription id)
-        room.addParticipantIfNew(voterName)
+        room.addParticipantIfNew(participantName)
 
         return params
       }

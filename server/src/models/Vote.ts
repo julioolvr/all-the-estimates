@@ -1,6 +1,7 @@
 import Participant from './Participant'
+import IVote from '../../../common/interfaces/IVote'
 
-class Vote {
+class Vote implements IVote {
   constructor(
     public participant: Participant,
     public value: number

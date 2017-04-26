@@ -11,12 +11,17 @@
     "react-dom": "^15.5.4"
   },
   "devDependencies": {
-    "react-scripts-ts": "1.2.0"
+    "apollo-client": "^1.0.4",
+    "graphql-tag": "^2.0.0",
+    "react-apollo": "^1.1.0",
+    "react-scripts-ts": "1.2.0",
+    "subscriptions-transport-ws": "^0.5.5"
   },
   "scripts": {
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }

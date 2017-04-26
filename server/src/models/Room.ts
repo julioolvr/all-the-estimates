@@ -2,10 +2,11 @@ import db from '../db'
 import pubsub from '../pubsub'
 import Participant from './Participant'
 import Vote from './Vote'
+import IRoom from '../../../common/interfaces/IRoom'
 
 const collection = db.collection('rooms')
 
-class Room {
+class Room implements IRoom {
   constructor(
     public id: string,
     public key: string,
@@ -14,16 +15,19 @@ class Room {
   ) {}
 
   async addParticipant(name: string): Promise<Participant> {
+    console.log('Room#addParticipant', name)
     const participant = new Participant(name)
     this.participants.push(participant)
 
     return new Promise<Participant>((resolve, reject) => {
+      console.log('Adding participant...')
       collection.update(
         { _id: this.id },
         { $push: { participants: participant } },
         (err, result) => err ? reject(err) : resolve(participant)
       )
     }).then(participant => {
+      console.log('Added participant', participant)
       pubsub.publish('onRoomEvent', {
         roomKey: this.key,
         onRoomEvent: {

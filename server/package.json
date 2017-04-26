@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "start": "npm run compile:watch & nodemon dist/index.js",
+    "start": "nodemon -e ts --exec \"npm run compile:execute\"",
     "compile": "tsc",
+    "compile:execute": "npm run compile && node dist/server/src/index.js",
     "compile:watch": "tsc -w"
   },
   "dependencies": {

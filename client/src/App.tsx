@@ -1,24 +1,38 @@
 import * as React from 'react';
+import { ApolloClient, ApolloProvider, createNetworkInterface } from 'react-apollo';
+import { SubscriptionClient, addGraphQLSubscriptions } from 'subscriptions-transport-ws';
+
 import './App.css';
+// import IParticipant from '../../common/interfaces/IParticipant';
+// import Participant from './components/Participant';
+import Room from './components/Room';
 
-import IParticipant from '../../common/interfaces/IParticipant';
-import Participant from './components/Participant';
+// TODO: Take from env variable
+const wsUrl = 'ws://localhost:3000/subscriptions';
 
-const dummyData: Array<IParticipant> = [
-  { name: 'Arthur Dent' },
-  { name: 'Marvin' }
-];
+const wsClient = new SubscriptionClient(wsUrl, {
+  reconnect: true
+});
+
+const networkInterface = createNetworkInterface({
+  uri: 'http://localhost:3000/graphql' // TODO: Take from env variable
+});
+
+const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
+  networkInterface,
+  wsClient
+);
+
+const client = new ApolloClient({
+  networkInterface: networkInterfaceWithSubscriptions,
+});
 
 class App extends React.Component<{}, null> {
   render() {
     return (
-      <div>
-        {dummyData.map(participant => (
-          <Participant
-            key={participant.name}
-            participant={participant} />
-        ))}
-      </div>
+      <ApolloProvider client={client}>
+        <Room roomKey="some-room" participantName="Arthur Dent 3" />
+      </ApolloProvider>
     );
   }
 }
