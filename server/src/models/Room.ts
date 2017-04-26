@@ -47,6 +47,19 @@ class Room implements IRoom {
     return this.addParticipant(name)
   }
 
+  async removeParticipantWithName(name: string): Promise<Participant> {
+    const removedParticipant = this.participants.find(participant => participant.name === name)
+    this.participants = this.participants.filter(participant => participant !== removedParticipant)
+
+    return new Promise<Participant>((resolve, reject) => {
+      collection.update(
+        { _id: this.id },
+        { $set: { participants: this.participants } },
+        (err, result) => err ? reject(err) : resolve(removedParticipant)
+      );
+    });
+  }
+
   async vote(voterName: string, value: number): Promise<Vote> {
     const existingVote = this.findVoteForName(voterName)
 
