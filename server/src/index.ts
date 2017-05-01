@@ -36,24 +36,7 @@ app.use('/graphiql', graphiqlExpress({
 server.listen(PORT, () => {
   new SubscriptionServer(
     {
-      subscriptionManager: subscriptionManager,
-      onSubscribe: async (message, params, connection) => {
-        if (message.type !== 'subscription_start') {
-          return params
-        }
-
-        // TODO: Validation
-        // TODO: Try not to depend on variables (parse the query?)
-        const { roomKey, participantName } = message.variables
-        const room = await Room.findOrCreateByKey(roomKey)
-
-        // TODO: Check what's best when participant already present
-        // TODO: Remove participant on unsubscribe somehow
-        // (maybe associate participant to subscription id)
-        room.addParticipantIfNew(participantName)
-
-        return params
-      }
+      subscriptionManager: subscriptionManager
     },
     {
       server: server,
