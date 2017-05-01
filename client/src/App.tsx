@@ -1,10 +1,13 @@
 import * as React from 'react';
 import { ApolloClient, ApolloProvider, createNetworkInterface } from 'react-apollo';
 import { SubscriptionClient, addGraphQLSubscriptions } from 'subscriptions-transport-ws';
+import {
+  BrowserRouter as Router,
+  Route
+} from 'react-router-dom';
 
 import './App.css';
-// import IParticipant from '../../common/interfaces/IParticipant';
-// import Participant from './components/Participant';
+import Home from './components/Home';
 import Room from './components/Room';
 
 // TODO: Take from env variable
@@ -31,7 +34,14 @@ class App extends React.Component<{}, null> {
   render() {
     return (
       <ApolloProvider client={client}>
-        <Room roomKey="some-room" voterName={`Member ${Math.random()}`} />
+        <Router>
+          <div>
+            <Route exact path="/" component={Home} />
+            <Route path="/:roomKey" render={({ match }) => (
+              <Room roomKey={match.params.roomKey} voterName={`Member ${Math.random()}`} />
+            )} />
+          </div>
+        </Router>
       </ApolloProvider>
     );
   }
