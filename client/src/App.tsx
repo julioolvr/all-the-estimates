@@ -37,8 +37,8 @@ class App extends React.Component<{}, null> {
         <Router>
           <div>
             <Route exact path="/" component={Home} />
-            <Route path="/:roomKey" render={({ match }) => (
-              <Room roomKey={match.params.roomKey} voterName={`Member ${Math.random()}`} />
+            <Route path="/:roomKey" render={({ match, location }) => (
+              <Room roomKey={match.params.roomKey} voterName={location.state.voterName} />
             )} />
           </div>
         </Router>
