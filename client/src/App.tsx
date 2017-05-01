@@ -31,7 +31,7 @@ class App extends React.Component<{}, null> {
   render() {
     return (
       <ApolloProvider client={client}>
-        <Room roomKey="some-room" participantName="Arthur Dent 3" />
+        <Room roomKey="some-room" voterName={`Member ${Math.random()}`} />
       </ApolloProvider>
     );
   }

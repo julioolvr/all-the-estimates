@@ -47,7 +47,7 @@ type Mutation {
 }
 
 type Subscription {
-  onRoomEvent(roomKey: String!, voterName: String!): RoomEvent
+  onRoomEvent(roomKey: String!): RoomEvent
 }
 
 schema {

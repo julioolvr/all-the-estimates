@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { gql, graphql } from 'react-apollo';
+import { gql, graphql, compose } from 'react-apollo';
+import { WrapWithApollo } from 'react-apollo/src/graphql';
 
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
@@ -9,14 +10,16 @@ interface DataProp {
   room: {
     participants: Array<IParticipant>
   };
-};
+}
 
 interface Props {
   roomKey: string;
-  participantName: string;
+  voterName: string;
   data?: DataProp;
   subscribeToRoomEvents?: Function;
-};
+  joinRoomMutation?: Function;
+  leaveRoomMutation?: Function;
+}
 
 interface State {
   unsubscribe?: Function;
@@ -24,17 +27,14 @@ interface State {
 
 class Room extends React.Component<Props, State> {
   componentWillReceiveProps(newProps: Props) {
-    // TODO: These null checks are annoying, but I have to make these props
-    // optional - otherwise TS will complain when rendering the component without
-    // them, even though the graphql HoC will provide them.
-    if (!this.props.data || !newProps.data || !newProps.subscribeToRoomEvents) {
-      return;
-    }
-
     if (this.props.data.loading && !newProps.data.loading) {
       const unsubscribe = newProps.subscribeToRoomEvents({
         roomKey: this.props.roomKey,
-        participantName: this.props.participantName
+      });
+
+      this.props.joinRoomMutation({
+        roomKey: this.props.roomKey,
+        voterName: this.props.voterName
       });
 
       this.setState({ unsubscribe });
@@ -42,14 +42,22 @@ class Room extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
+    // TODO: This isn't the safest place to do this, it might
+    // not be called when abruptly closing the page. I probably
+    // need to do it serverside when the subscription dies.
     if (this.state.unsubscribe) {
       this.state.unsubscribe();
       this.setState({ unsubscribe: undefined });
     }
+
+    this.props.leaveRoomMutation({
+      roomKey: this.props.roomKey,
+      voterName: this.props.voterName
+    });
   }
 
   render() {
-    const { data, roomKey, participantName } = this.props;
+    const { data, roomKey, voterName } = this.props;
 
     if (!data || data.loading) {
       return <div>Loading...</div>;
@@ -58,7 +66,7 @@ class Room extends React.Component<Props, State> {
     return (
       <div>
         <h1>Room: {roomKey}</h1>
-        <div>I am: {participantName}</div>
+        <div>I am: {voterName}</div>
         <ul>
           {data.room.participants.map(participant => <li key={participant.name}>{participant.name}</li>)}
         </ul>
@@ -77,9 +85,29 @@ const Query = gql`
   }
 `;
 
+const JoinRoomMutation = gql`
+  mutation JoinRoom($roomKey: String!, $voterName: String!) {
+    join(roomKey: $roomKey, voterName: $voterName) {
+      participants {
+        name
+      }
+    }
+  }
+`;
+
+const LeaveRoomMutation = gql`
+  mutation LeaveRoom($roomKey: String!, $voterName: String!) {
+    leave(roomKey: $roomKey, voterName: $voterName) {
+      participants {
+        name
+      }
+    }
+  }
+`;
+
 const Subscription = gql`
-  subscription onRoomEvent($roomKey: String!, $participantName: String!) {
-    onRoomEvent(roomKey: $roomKey, voterName: $participantName) {
+  subscription onRoomEvent($roomKey: String!) {
+    onRoomEvent(roomKey: $roomKey) {
       ... on ParticipantEvent {
         participant {
           name
@@ -97,40 +125,48 @@ interface SubscriptionData {
   };
 }
 
-export default graphql(Query, {
-  props: props => {
-    return {
-      ...props,
-      subscribeToRoomEvents: (
-        { roomKey, participantName }:
-        { roomKey: string, participantName: string }
-      ) => {
-        return props.data.subscribeToMore({
-          document: Subscription,
-          variables: {
-            roomKey,
-            participantName
-          },
-          updateQuery: (
-            prev: { room: IRoom },
-            { subscriptionData }: { subscriptionData: SubscriptionData }
-          ) => {
-            if (!subscriptionData.data) {
-              return prev;
+export default compose<
+  WrapWithApollo,
+  WrapWithApollo,
+  typeof Room,
+  typeof Room
+>(
+  graphql(Query, {
+    props: props => {
+      return {
+        ...props,
+        subscribeToRoomEvents: (
+          { roomKey }:
+          { roomKey: string }
+        ) => {
+          return props.data.subscribeToMore({
+            document: Subscription,
+            variables: {
+              roomKey,
+            },
+            updateQuery: (
+              prev: { room: IRoom },
+              { subscriptionData }: { subscriptionData: SubscriptionData }
+            ) => {
+              if (!subscriptionData.data) {
+                return prev;
+              }
+
+              const newRoom = {
+                ...prev.room,
+                participants: [
+                  ...prev.room.participants,
+                  subscriptionData.data.onRoomEvent.participant
+                ]
+              };
+
+              return { room: newRoom };
             }
-
-            const newRoom = {
-              ...prev.room,
-              participants: [
-                ...prev.room.participants,
-                subscriptionData.data.onRoomEvent.participant
-              ]
-            };
-
-            return { room: newRoom };
-          }
-        });
-      }
-    };
-  }
-})(Room);
+          });
+        }
+      };
+    }
+  }),
+  graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
+  graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' })
+)(Room);
