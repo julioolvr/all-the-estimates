@@ -18,6 +18,7 @@
     "typescript": "^2.2.2"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.11.0",
+    "uuid": "^3.0.1"
   }
 }
