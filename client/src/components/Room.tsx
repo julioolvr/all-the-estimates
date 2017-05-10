@@ -15,6 +15,8 @@ interface DataProp {
 interface Props {
   roomKey: string;
   voterName: string;
+  onRoomJoined: Function;
+  currentParticipant?: IParticipant;
   data?: DataProp;
   subscribeToRoomEvents?: Function;
   joinRoomMutation?: Function;
@@ -35,7 +37,7 @@ class Room extends React.Component<Props, State> {
       this.props.joinRoomMutation({
         roomKey: this.props.roomKey,
         voterName: this.props.voterName
-      });
+      }).then(({ data: { join: participant } }) => this.props.onRoomJoined(participant));
 
       this.setState({ unsubscribe });
     }
@@ -88,9 +90,8 @@ const Query = gql`
 const JoinRoomMutation = gql`
   mutation JoinRoom($roomKey: String!, $voterName: String!) {
     join(roomKey: $roomKey, voterName: $voterName) {
-      participants {
-        name
-      }
+      id
+      name
     }
   }
 `;
@@ -168,5 +169,5 @@ export default compose<
     }
   }),
   graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
-  graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' })
+  graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' }),
 )(Room);

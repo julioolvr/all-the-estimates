@@ -9,6 +9,7 @@ import {
 import './App.css';
 import Home from './components/Home';
 import Room from './components/Room';
+import IParticipant from '../../common/interfaces/IParticipant';
 
 // TODO: Take from env variable
 const wsUrl = 'ws://localhost:3000/subscriptions';
@@ -30,7 +31,34 @@ const client = new ApolloClient({
   networkInterface: networkInterfaceWithSubscriptions,
 });
 
-class App extends React.Component<{}, null> {
+interface State {
+  participantId?: string;
+}
+
+class App extends React.Component<{}, State> {
+  state: State = {};
+
+  componentDidMount() {
+    networkInterface.use([{
+      applyMiddleware: (req, next) => {
+        if (!this.state.participantId) {
+          return next();
+        }
+
+        if (!req.options.headers) {
+          req.options.headers = {};
+        }
+
+        req.options.headers.participantId = this.state.participantId;
+        next();
+      }
+    }]);
+  }
+
+  onRoomJoined = (participant: IParticipant) => {
+    this.setState({ participantId: participant.id });
+  }
+
   render() {
     return (
       <ApolloProvider client={client}>
@@ -38,7 +66,11 @@ class App extends React.Component<{}, null> {
           <div>
             <Route exact path="/" component={Home} />
             <Route path="/:roomKey" render={({ match, location }) => (
-              <Room roomKey={match.params.roomKey} voterName={location.state.voterName} />
+              <Room
+                roomKey={match.params.roomKey}
+                voterName={location.state.voterName}
+                onRoomJoined={this.onRoomJoined}
+              />
             )} />
           </div>
         </Router>

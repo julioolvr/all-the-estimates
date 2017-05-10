@@ -41,7 +41,7 @@ type Query {
 
 type Mutation {
   vote(roomKey: String!, voterName: String!, value: Int!): Vote
-  join(roomKey: String!, voterName: String!): Room
+  join(roomKey: String!, voterName: String!): Participant
   leave(roomKey: String!, voterName: String!): Room
   reset(roomKey: String!): Room
 }
@@ -75,8 +75,7 @@ const resolvers = {
     },
     async join(_, { roomKey, voterName }) {
       const room = await Room.findOrCreateByKey(roomKey)
-      await room.addParticipant(voterName)
-      return room
+      return await room.addParticipant(voterName)
     },
     async leave(_, { roomKey, voterName }) {
       const room = await Room.findByKey(roomKey)
