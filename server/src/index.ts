@@ -27,7 +27,18 @@ const subscriptionManager = new SubscriptionManager({
 })
 
 const GRAPHQL_PATH = '/graphql'
-app.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress({ schema }))
+
+app.use(
+  GRAPHQL_PATH,
+  bodyParser.json(),
+  graphqlExpress(
+    request => ({
+      schema,
+      context: { participantId: request.headers.participantid }
+    })
+  )
+)
+
 app.use('/graphiql', graphiqlExpress({
   endpointURL: GRAPHQL_PATH,
   subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`,

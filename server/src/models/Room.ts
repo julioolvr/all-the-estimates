@@ -60,20 +60,20 @@ class Room implements IRoom {
     });
   }
 
-  async vote(voterName: string, value: number): Promise<Vote> {
-    const existingVote = this.findVoteForName(voterName)
+  async vote(voterId: string, value: number): Promise<Vote> {
+    const existingVote = this.findVoteForVoterId(voterId)
 
     if (existingVote) {
       existingVote.value = value
-      await this.updateVote(voterName, value)
+      await this.updateVote(voterId, value)
       return existingVote
     } else {
-      return this.registerNewVote(voterName, value)
+      return this.registerNewVote(voterId, value)
     }
   }
 
-  async registerNewVote(voterName: string, value: number) {
-    const participant = this.participants.find(participant => participant.name === voterName)
+  async registerNewVote(voterId: string, value: number) {
+    const participant = this.participants.find(participant => participant.id === voterId)
     const vote = new Vote(participant, value)
     this.votes.push(vote)
 
@@ -93,10 +93,10 @@ class Room implements IRoom {
     })
   }
 
-  async updateVote(voterName: string, newValue: number): Promise<Vote> {
+  async updateVote(voterId: string, newValue: number): Promise<Vote> {
     return new Promise<Vote>((resolve, reject) => {
       const votes = this.votes
-      const vote = votes.find(vote => vote.participant.name === voterName)
+      const vote = votes.find(vote => vote.participant.id === voterId)
       vote.value = newValue
 
       collection.update(
@@ -107,8 +107,8 @@ class Room implements IRoom {
     })
   }
 
-  findVoteForName(voterName: string): Vote | undefined {
-    return this.votes.find(vote => vote.participant.name === voterName)
+  findVoteForVoterId(voterId: string): Vote | undefined {
+    return this.votes.find(vote => vote.participant.id === voterId)
   }
 
   async resetVotes(): Promise<void> {

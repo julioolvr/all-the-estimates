@@ -15,6 +15,7 @@ type Participant {
 }
 
 type Vote {
+  id: ID,
   participant: Participant,
   value: Int
 }
@@ -40,7 +41,7 @@ type Query {
 }
 
 type Mutation {
-  vote(roomKey: String!, voterName: String!, value: Int!): Vote
+  vote(roomKey: String!, value: Int!): Vote
   join(roomKey: String!, voterName: String!): Participant
   leave(roomKey: String!, voterName: String!): Room
   reset(roomKey: String!): Room
@@ -64,9 +65,9 @@ const resolvers = {
     }
   },
   Mutation: {
-    async vote(_, { roomKey, voterName, value }) {
+    async vote(_, { roomKey, value }, context) {
       const room = await Room.findByKey(roomKey)
-      return room.vote(voterName, value)
+      return room.vote(context.participantId, value)
     },
     async reset(_, { roomKey }) {
       const room = await Room.findByKey(roomKey)

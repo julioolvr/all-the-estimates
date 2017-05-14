@@ -4,11 +4,13 @@ import { WrapWithApollo } from 'react-apollo/src/graphql';
 
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
+import IVote from '../../../common/interfaces/IVote';
 
 interface DataProp {
   loading: boolean;
   room: {
-    participants: Array<IParticipant>
+    participants: Array<IParticipant>,
+    votes: Array<IVote>
   };
 }
 
@@ -21,6 +23,7 @@ interface Props {
   subscribeToRoomEvents?: Function;
   joinRoomMutation?: Function;
   leaveRoomMutation?: Function;
+  voteMutation?: Function;
 }
 
 interface State {
@@ -37,7 +40,8 @@ class Room extends React.Component<Props, State> {
       this.props.joinRoomMutation({
         roomKey: this.props.roomKey,
         voterName: this.props.voterName
-      }).then(({ data: { join: participant } }) => this.props.onRoomJoined(participant));
+      }).then(({ data: { join: participant } }) => this.props.onRoomJoined(participant))
+        .then(() => this.props.voteMutation({ variables: { roomKey: this.props.roomKey, value: 5 } }));
 
       this.setState({ unsubscribe });
     }
@@ -70,7 +74,16 @@ class Room extends React.Component<Props, State> {
         <h1>Room: {roomKey}</h1>
         <div>I am: {voterName}</div>
         <ul>
-          {data.room.participants.map(participant => <li key={participant.name}>{participant.name}</li>)}
+          {data.room.participants.map(participant => {
+            const vote = data.room.votes.find(vote => vote.participant.id === participant.id);
+
+            return (
+              <li key={participant.name}>
+                {participant.name}
+                {vote && <span>({vote.value})</span>}
+              </li>
+            );
+          })}
         </ul>
       </div>
     );
@@ -80,8 +93,19 @@ class Room extends React.Component<Props, State> {
 const Query = gql`
   query GetRoom($roomKey: String!) {
     room(key: $roomKey) {
+      key
       participants {
+        id
         name
+      }
+
+      votes {
+        id
+        value
+
+        participant {
+          id
+        }
       }
     }
   }
@@ -106,11 +130,24 @@ const LeaveRoomMutation = gql`
   }
 `;
 
+const VoteMutation = gql`
+  mutation Vote($roomKey: String!, $value: Int!) {
+    vote(roomKey: $roomKey, value: $value) {
+      id
+      value
+      participant {
+        id
+      }
+    }
+  }
+`;
+
 const Subscription = gql`
   subscription onRoomEvent($roomKey: String!) {
     onRoomEvent(roomKey: $roomKey) {
       ... on ParticipantEvent {
         participant {
+          id
           name
         }
       }
@@ -146,27 +183,55 @@ export default compose<
               roomKey,
             },
             updateQuery: (
-              prev: { room: IRoom },
+              prev,
               { subscriptionData }: { subscriptionData: SubscriptionData }
             ) => {
+              const { room } : { room: IRoom } = prev;
+
               if (!subscriptionData.data) {
                 return prev;
               }
 
               const newRoom = {
-                ...prev.room,
+                ...room,
                 participants: [
-                  ...prev.room.participants,
+                  ...room.participants,
                   subscriptionData.data.onRoomEvent.participant
                 ]
               };
 
-              return { room: newRoom };
+              return {
+                ...prev,
+                room: newRoom
+              };
             }
           });
         }
       };
     }
+  }),
+  graphql(VoteMutation, {
+    name: 'voteMutation',
+    options: ({ roomKey }) => ({
+      refetchQueries: [{
+        query: gql`
+          query UpdateRoomCache($roomKey: String!) {
+            room(key: $roomKey) {
+              key
+              votes {
+                id
+                value
+
+                participant {
+                  id
+                }
+              }
+            }
+          }
+        `,
+        variables: { roomKey }
+      }]
+    })
   }),
   graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
   graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' }),

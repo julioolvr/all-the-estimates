@@ -1,5 +1,5 @@
 interface IParticipant {
-  id: string;
+  id?: string;
   name: string;
 }
 

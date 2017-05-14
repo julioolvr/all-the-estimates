@@ -3,16 +3,26 @@ import * as uuid from 'uuid/v4'
 import IParticipant from '../../../common/interfaces/IParticipant'
 
 class Participant implements IParticipant {
-  public id: string
+  constructor(
+    name: string,
+  )
 
   constructor(
-    public name: string
+    name: string,
+    id: string,
+  )
+
+  constructor(
+    public name: string,
+    public id?: string
   ) {
-    this.id = uuid()
+    if (!this.id) {
+      this.id = uuid()
+    }
   }
 
   static fromResult(result): Participant {
-    return new Participant(result.name)
+    return new Participant(result.name, result.id)
   }
 }
 

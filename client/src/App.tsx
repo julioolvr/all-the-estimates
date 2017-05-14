@@ -27,8 +27,21 @@ const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
   wsClient
 );
 
+interface GraphqlType {
+  __typename: String;
+  key: String;
+  id: String;
+}
+
 const client = new ApolloClient({
   networkInterface: networkInterfaceWithSubscriptions,
+  dataIdFromObject: (o: GraphqlType) => {
+    if (o.__typename === 'Room') {
+      return `Room:${o.key}`;
+    }
+
+    return `${o.__typename}:${o.id}`;
+  }
 });
 
 interface State {
@@ -49,7 +62,7 @@ class App extends React.Component<{}, State> {
           req.options.headers = {};
         }
 
-        req.options.headers.participantId = this.state.participantId;
+        req.options.headers.participantid = this.state.participantId;
         next();
       }
     }]);
