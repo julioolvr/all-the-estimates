@@ -9,6 +9,7 @@ import {
 import './App.css';
 import Home from './components/Home';
 import Room from './components/Room';
+
 import IParticipant from '../../common/interfaces/IParticipant';
 
 // TODO: Take from env variable
@@ -77,12 +78,13 @@ class App extends React.Component<{}, State> {
       <ApolloProvider client={client}>
         <Router>
           <div>
-            <Route exact path="/" component={Home} />
+            <Route exact path="/" render={() => {
+              return <Home onRoomJoined={this.onRoomJoined} />;
+            }} />
             <Route path="/:roomKey" render={({ match, location }) => (
               <Room
                 roomKey={match.params.roomKey}
-                voterName={location.state.voterName}
-                onRoomJoined={this.onRoomJoined}
+                voterId={location.state.voterId}
               />
             )} />
           </div>

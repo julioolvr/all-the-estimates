@@ -2,6 +2,8 @@ import * as React from 'react';
 import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
 
+import VoteInput from './VoteInput';
+
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
 import IVote from '../../../common/interfaces/IVote';
@@ -16,12 +18,10 @@ interface DataProp {
 
 interface Props {
   roomKey: string;
-  voterName: string;
-  onRoomJoined: Function;
+  voterId: string;
   currentParticipant?: IParticipant;
   data?: DataProp;
   subscribeToRoomEvents?: Function;
-  joinRoomMutation?: Function;
   leaveRoomMutation?: Function;
   voteMutation?: Function;
 }
@@ -31,17 +31,20 @@ interface State {
 }
 
 class Room extends React.Component<Props, State> {
+  sendVote = value => {
+    this.props.voteMutation({
+      variables: {
+        roomKey: this.props.roomKey,
+        value
+      }
+    });
+  }
+
   componentWillReceiveProps(newProps: Props) {
     if (this.props.data.loading && !newProps.data.loading) {
       const unsubscribe = newProps.subscribeToRoomEvents({
         roomKey: this.props.roomKey,
       });
-
-      this.props.joinRoomMutation({
-        roomKey: this.props.roomKey,
-        voterName: this.props.voterName
-      }).then(({ data: { join: participant } }) => this.props.onRoomJoined(participant))
-        .then(() => this.props.voteMutation({ variables: { roomKey: this.props.roomKey, value: 5 } }));
 
       this.setState({ unsubscribe });
     }
@@ -58,27 +61,32 @@ class Room extends React.Component<Props, State> {
 
     this.props.leaveRoomMutation({
       roomKey: this.props.roomKey,
-      voterName: this.props.voterName
+      voterId: this.props.voterId
     });
   }
 
   render() {
-    const { data, roomKey, voterName } = this.props;
+    const { data, roomKey, voterId } = this.props;
 
     if (!data || data.loading) {
       return <div>Loading...</div>;
     }
 
+    // TODO: If !voterId, show a prompt to join
+    const me = data.room.participants.find(participant => participant.id === voterId);
+    const myVote = data.room.votes.find(vote => vote.participant.id === me.id);
+
     return (
       <div>
         <h1>Room: {roomKey}</h1>
-        <div>I am: {voterName}</div>
+        <div>I am: {me.name}</div>
+        <VoteInput disabled={!!myVote} onVote={this.sendVote} />
         <ul>
           {data.room.participants.map(participant => {
-            const vote = data.room.votes.find(vote => vote.participant.id === participant.id);
+            const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 
             return (
-              <li key={participant.name}>
+              <li key={participant.id}>
                 {participant.name}
                 {vote && <span>({vote.value})</span>}
               </li>
@@ -107,15 +115,6 @@ const Query = gql`
           id
         }
       }
-    }
-  }
-`;
-
-const JoinRoomMutation = gql`
-  mutation JoinRoom($roomKey: String!, $voterName: String!) {
-    join(roomKey: $roomKey, voterName: $voterName) {
-      id
-      name
     }
   }
 `;
@@ -151,6 +150,16 @@ const Subscription = gql`
           name
         }
       }
+
+      ... on VoteEvent {
+        vote {
+          id
+          value
+          participant {
+            id
+          }
+        }
+      }
     }
   }
 `;
@@ -158,7 +167,8 @@ const Subscription = gql`
 interface SubscriptionData {
   data?: {
     onRoomEvent: {
-      participant: IParticipant
+      participant?: IParticipant;
+      vote?: IVote;
     }
   };
 }
@@ -186,19 +196,33 @@ export default compose<
               prev,
               { subscriptionData }: { subscriptionData: SubscriptionData }
             ) => {
-              const { room } : { room: IRoom } = prev;
+              const { room }: { room: IRoom } = prev;
 
               if (!subscriptionData.data) {
                 return prev;
               }
 
-              const newRoom = {
-                ...room,
-                participants: [
-                  ...room.participants,
-                  subscriptionData.data.onRoomEvent.participant
-                ]
-              };
+              let newRoom = room;
+
+              if (subscriptionData.data.onRoomEvent.participant) {
+                newRoom = {
+                  ...newRoom,
+                  participants: [
+                    ...room.participants,
+                    subscriptionData.data.onRoomEvent.participant
+                  ]
+                };
+              }
+
+              if (subscriptionData.data.onRoomEvent.vote) {
+                newRoom = {
+                  ...newRoom,
+                  votes: [
+                    ...room.votes,
+                    subscriptionData.data.onRoomEvent.vote
+                  ]
+                };
+              }
 
               return {
                 ...prev,
@@ -233,6 +257,5 @@ export default compose<
       }]
     })
   }),
-  graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
   graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' }),
 )(Room);

@@ -78,6 +78,7 @@ const resolvers = {
       const room = await Room.findOrCreateByKey(roomKey)
       return await room.addParticipant(voterName)
     },
+    // TODO: Leave based on context instead of voterName parameter
     async leave(_, { roomKey, voterName }) {
       const room = await Room.findByKey(roomKey)
       await room.removeParticipantWithName(voterName)

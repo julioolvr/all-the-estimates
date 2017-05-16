@@ -1,16 +1,48 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { gql, graphql, compose } from 'react-apollo';
+import { WrapWithApollo } from 'react-apollo/src/graphql';
+import { withRouter } from 'react-router-dom';
+
+import IParticipant from '../../../common/interfaces/IParticipant';
 
 interface State {
   roomKey: string;
   voterName: string;
 }
 
-class Home extends React.Component<{}, State> {
+interface Props {
+  onRoomJoined: Function;
+  joinRoomMutation?: Function;
+  history?: {
+    push: Function;
+  };
+}
+
+class Home extends React.Component<Props, State> {
   state = {
     roomKey: '',
     voterName: ''
   };
+
+  onJoinClick = () => {
+    const { history } = this.props;
+    const { voterName, roomKey } = this.state;
+
+    this.props.joinRoomMutation({ variables: { voterName, roomKey } })
+      .then(({ data: { join: participant }}: { data: { join: IParticipant } }) => {
+        return participant;
+      })
+      .then(participant => {
+        this.props.onRoomJoined(participant);
+        return participant;
+      })
+      .then(participant => {
+        history.push({
+          pathname: `/${roomKey}`,
+          state: { voterId: participant.id }
+        });
+      });
+  }
 
   render() {
     return (
@@ -31,17 +63,28 @@ class Home extends React.Component<{}, State> {
           />
         </label>
 
-        <Link
-          to={{
-            pathname: `/${this.state.roomKey}`,
-            state: { voterName: this.state.voterName }
-          }}
-        >
+        <button onClick={this.onJoinClick}>
           Join
-        </Link>
+        </button>
       </div>
     );
   }
 }
 
-export default Home;
+const JoinRoomMutation = gql`
+  mutation JoinRoom($roomKey: String!, $voterName: String!) {
+    join(roomKey: $roomKey, voterName: $voterName) {
+      id
+      name
+    }
+  }
+`;
+
+export default compose<
+  WrapWithApollo,
+  typeof Home,
+  typeof Home
+>(
+  graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
+  withRouter
+)(Home);
