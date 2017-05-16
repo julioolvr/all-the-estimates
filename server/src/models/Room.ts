@@ -11,7 +11,8 @@ class Room implements IRoom {
     public id: string,
     public key: string,
     public participants: Array<Participant>,
-    public votes: Array<Vote>
+    public votes: Array<Vote>,
+    public openForVoting: boolean = true,
   ) {}
 
   async addParticipant(name: string): Promise<Participant> {
@@ -118,6 +119,25 @@ class Room implements IRoom {
     return this.votes.find(vote => vote.participant.id === voterId)
   }
 
+  async closeVoting(): Promise<void> {
+    this.openForVoting = false;
+
+    pubsub.publish('onRoomEvent', {
+      roomKey: this.key,
+      onRoomEvent: {
+        room: this
+      }
+    })
+
+    return new Promise<void>((resolve, reject) => {
+      collection.update(
+        { _id: this.id },
+        { $set: { openForVoting: false } },
+        err => err ? reject(err) : resolve()
+      )
+    });
+  }
+
   async resetVotes(): Promise<void> {
     this.votes = []
 
@@ -138,7 +158,8 @@ class Room implements IRoom {
       result._id,
       result.key,
       participants,
-      votes
+      votes,
+      result.openForVoting
     )
   }
 

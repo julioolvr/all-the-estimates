@@ -10,10 +10,7 @@ import IVote from '../../../common/interfaces/IVote';
 
 interface DataProp {
   loading: boolean;
-  room: {
-    participants: Array<IParticipant>,
-    votes: Array<IVote>
-  };
+  room: IRoom;
 }
 
 interface Props {
@@ -24,6 +21,7 @@ interface Props {
   subscribeToRoomEvents?: Function;
   leaveRoomMutation?: Function;
   voteMutation?: Function;
+  closeVoteMutation?: Function;
 }
 
 interface State {
@@ -38,6 +36,10 @@ class Room extends React.Component<Props, State> {
         value
       }
     });
+  }
+
+  closeVote = () => {
+    this.props.closeVoteMutation();
   }
 
   componentWillReceiveProps(newProps: Props) {
@@ -80,7 +82,12 @@ class Room extends React.Component<Props, State> {
       <div>
         <h1>Room: {roomKey}</h1>
         <div>I am: {me.name}</div>
-        <VoteInput onVote={this.sendVote} value={myVote ? myVote.value : undefined} />
+        <VoteInput
+          disabled={!data.room.openForVoting}
+          onVote={this.sendVote}
+          value={myVote ? myVote.value : undefined}
+        />
+        <button disabled={!data.room.openForVoting} onClick={this.closeVote}>Close</button>
         <ul>
           {data.room.participants.map(participant => {
             const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
@@ -102,6 +109,8 @@ const Query = gql`
   query GetRoom($roomKey: String!) {
     room(key: $roomKey) {
       key
+      openForVoting
+
       participants {
         id
         name
@@ -141,6 +150,15 @@ const VoteMutation = gql`
   }
 `;
 
+const CloseVoteMutation = gql`
+  mutation CloseVote($roomKey: String!) {
+    close(roomKey: $roomKey) {
+      key
+      openForVoting
+    }
+  }
+`;
+
 const Subscription = gql`
   subscription onRoomEvent($roomKey: String!) {
     onRoomEvent(roomKey: $roomKey) {
@@ -160,6 +178,12 @@ const Subscription = gql`
           }
         }
       }
+
+      ... on StatusEvent {
+        room {
+          openForVoting
+        }
+      }
     }
   }
 `;
@@ -169,6 +193,7 @@ interface SubscriptionData {
     onRoomEvent: {
       participant?: IParticipant;
       vote?: IVote;
+      room?: IRoom;
     }
   };
 }
@@ -211,6 +236,13 @@ export default compose<
                     ...room.participants,
                     subscriptionData.data.onRoomEvent.participant
                   ]
+                };
+              }
+
+              if (subscriptionData.data.onRoomEvent.room) {
+                newRoom = {
+                  ...newRoom,
+                  ...subscriptionData.data.onRoomEvent.room
                 };
               }
 
@@ -265,4 +297,5 @@ export default compose<
     })
   }),
   graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' }),
+  graphql(CloseVoteMutation, { name: 'closeVoteMutation' })
 )(Room);

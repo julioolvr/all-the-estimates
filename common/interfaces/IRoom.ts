@@ -6,6 +6,7 @@ interface IRoom {
   key: string;
   participants: Array<IParticipant>;
   votes: Array<IVote>;
+  openForVoting: boolean;
 }
 
 export default IRoom;

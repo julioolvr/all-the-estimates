@@ -3,6 +3,7 @@ import * as React from 'react';
 interface Props {
   onVote: Function;
   value?: number;
+  disabled?: boolean;
 }
 
 interface State {
@@ -15,15 +16,21 @@ class VoteInput extends React.Component<Props, State> {
   };
 
   render() {
-    const { onVote } = this.props;
+    const { onVote, disabled = false } = this.props;
     return (
       <div>
         My vote:
         <input
+          disabled={disabled}
           value={this.state.voteValue}
           onChange={e => this.setState({ voteValue: Number(e.target.value) })}
         />
-        <button onClick={() => onVote(this.state.voteValue)}>Vote</button>
+        <button
+          disabled={disabled}
+          onClick={() => onVote(this.state.voteValue)}
+        >
+          Vote
+        </button>
       </div>
     );
   }

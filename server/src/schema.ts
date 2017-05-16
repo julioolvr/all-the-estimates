@@ -5,6 +5,7 @@ const schemaDef = `
 type Room {
   id: ID,
   key: String,
+  openForVoting: Boolean,
   participants: [Participant],
   votes: [Vote]
 }
@@ -34,7 +35,11 @@ type VoteEvent {
   vote: Vote
 }
 
-union RoomEvent = ParticipantEvent | VoteEvent
+type StatusEvent {
+  room: Room
+}
+
+union RoomEvent = ParticipantEvent | VoteEvent | StatusEvent
 
 type Query {
   room(key: String!): Room
@@ -45,6 +50,7 @@ type Mutation {
   join(roomKey: String!, voterName: String!): Participant
   leave(roomKey: String!, voterName: String!): Room
   reset(roomKey: String!): Room
+  close(roomKey: String!): Room
 }
 
 type Subscription {
@@ -83,6 +89,11 @@ const resolvers = {
       const room = await Room.findByKey(roomKey)
       await room.removeParticipantWithName(voterName)
       return room
+    },
+    async close(_, { roomKey }) {
+      const room = await Room.findByKey(roomKey)
+      await room.closeVoting()
+      return room
     }
   },
   RoomEvent: {
@@ -93,6 +104,10 @@ const resolvers = {
 
       if (obj.vote) {
         return 'VoteEvent'
+      }
+
+      if (obj.room) {
+        return 'StatusEvent'
       }
 
       return null
