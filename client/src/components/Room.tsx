@@ -80,7 +80,7 @@ class Room extends React.Component<Props, State> {
       <div>
         <h1>Room: {roomKey}</h1>
         <div>I am: {me.name}</div>
-        <VoteInput disabled={!!myVote} onVote={this.sendVote} />
+        <VoteInput onVote={this.sendVote} value={myVote ? myVote.value : undefined} />
         <ul>
           {data.room.participants.map(participant => {
             const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
@@ -215,10 +215,17 @@ export default compose<
               }
 
               if (subscriptionData.data.onRoomEvent.vote) {
+                const existingVote =
+                  newRoom.votes.find(vote => vote.id === subscriptionData.data.onRoomEvent.vote.id);
+
+                const prevVotes = existingVote ?
+                  newRoom.votes.filter(vote => vote !== existingVote) :
+                  newRoom.votes;
+
                 newRoom = {
                   ...newRoom,
                   votes: [
-                    ...room.votes,
+                    ...prevVotes,
                     subscriptionData.data.onRoomEvent.vote
                   ]
                 };

@@ -99,6 +99,13 @@ class Room implements IRoom {
       const vote = votes.find(vote => vote.participant.id === voterId)
       vote.value = newValue
 
+      pubsub.publish('onRoomEvent', {
+        roomKey: this.key,
+        onRoomEvent: {
+          vote
+        }
+      })
+
       collection.update(
         { _id: this.id },
         { $set: { votes: votes.map(vote => vote.toRecord()) } },
