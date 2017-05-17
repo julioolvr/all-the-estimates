@@ -3,6 +3,7 @@ import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
 
 import VoteInput from './VoteInput';
+import RoomManagement from './RoomManagement';
 
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
@@ -22,6 +23,7 @@ interface Props {
   leaveRoomMutation?: Function;
   voteMutation?: Function;
   closeVoteMutation?: Function;
+  resetVotesMutation?: Function;
 }
 
 interface State {
@@ -40,6 +42,10 @@ class Room extends React.Component<Props, State> {
 
   closeVote = () => {
     this.props.closeVoteMutation();
+  }
+
+  resetVotes = () => {
+    this.props.resetVotesMutation();
   }
 
   componentWillReceiveProps(newProps: Props) {
@@ -87,7 +93,11 @@ class Room extends React.Component<Props, State> {
           onVote={this.sendVote}
           value={myVote ? myVote.value : undefined}
         />
-        <button disabled={!data.room.openForVoting} onClick={this.closeVote}>Close</button>
+        <RoomManagement
+          isOpenForVoting={data.room.openForVoting}
+          onClose={this.closeVote}
+          onReset={this.resetVotes}
+        />
         <ul>
           {data.room.participants.map(participant => {
             const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
@@ -159,6 +169,22 @@ const CloseVoteMutation = gql`
   }
 `;
 
+const ResetVotesMutation = gql`
+  mutation ResetVotes($roomKey: String!) {
+    reset(roomKey: $roomKey) {
+      key
+      openForVoting
+      votes {
+        id
+        value
+        participant {
+          id
+        }
+      }
+    }
+  }
+`;
+
 const Subscription = gql`
   subscription onRoomEvent($roomKey: String!) {
     onRoomEvent(roomKey: $roomKey) {
@@ -182,6 +208,13 @@ const Subscription = gql`
       ... on StatusEvent {
         room {
           openForVoting
+          votes {
+            id
+            value
+            participant {
+              id
+            }
+          }
         }
       }
     }
@@ -297,5 +330,6 @@ export default compose<
     })
   }),
   graphql(LeaveRoomMutation, { name: 'leaveRoomMutation' }),
-  graphql(CloseVoteMutation, { name: 'closeVoteMutation' })
+  graphql(CloseVoteMutation, { name: 'closeVoteMutation' }),
+  graphql(ResetVotesMutation, { name: 'resetVotesMutation' })
 )(Room);

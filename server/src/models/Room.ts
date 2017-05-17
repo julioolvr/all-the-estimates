@@ -140,11 +140,19 @@ class Room implements IRoom {
 
   async resetVotes(): Promise<void> {
     this.votes = []
+    this.openForVoting = true
+
+    pubsub.publish('onRoomEvent', {
+      roomKey: this.key,
+      onRoomEvent: {
+        room: this
+      }
+    })
 
     return new Promise<void>((resolve, reject) => {
       collection.update(
         { _id: this.id },
-        { $set: { votes: [] } },
+        { $set: { votes: [], openForVoting: true } },
         err => err ? reject(err) : resolve()
       )
     })
