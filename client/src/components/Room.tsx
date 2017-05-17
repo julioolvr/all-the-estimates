@@ -4,6 +4,7 @@ import { WrapWithApollo } from 'react-apollo/src/graphql';
 
 import VoteInput from './VoteInput';
 import RoomManagement from './RoomManagement';
+import Participant from './Participant';
 
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
@@ -103,10 +104,12 @@ class Room extends React.Component<Props, State> {
             const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 
             return (
-              <li key={participant.id}>
-                {participant.name}
-                {vote && <span>({vote.value})</span>}
-              </li>
+              <Participant
+                key={participant.id}
+                vote={vote}
+                participant={participant}
+                isRevealed={!data.room.openForVoting || participant === me}
+              />
             );
           })}
         </ul>
