@@ -73,6 +73,10 @@ class App extends React.Component<{}, State> {
     this.setState({ participantId: participant.id });
   }
 
+  onRoomLeft = () => {
+    this.setState({ participantId: null });
+  }
+
   render() {
     return (
       <ApolloProvider client={client}>
@@ -85,6 +89,7 @@ class App extends React.Component<{}, State> {
               <Room
                 roomKey={match.params.roomKey}
                 voterId={location.state.voterId}
+                onLeave={this.onRoomLeft}
               />
             )} />
           </div>

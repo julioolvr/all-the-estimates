@@ -48,7 +48,7 @@ type Query {
 type Mutation {
   vote(roomKey: String!, value: Int!): Vote
   join(roomKey: String!, voterName: String!): Participant
-  leave(roomKey: String!, voterName: String!): Room
+  leave(roomKey: String!): Room
   reset(roomKey: String!): Room
   close(roomKey: String!): Room
 }
@@ -84,10 +84,9 @@ const resolvers = {
       const room = await Room.findOrCreateByKey(roomKey)
       return await room.addParticipant(voterName)
     },
-    // TODO: Leave based on context instead of voterName parameter
-    async leave(_, { roomKey, voterName }) {
+    async leave(_, { roomKey }, context) {
       const room = await Room.findByKey(roomKey)
-      await room.removeParticipantWithName(voterName)
+      await room.removeParticipant(context.participantId)
       return room
     },
     async close(_, { roomKey }) {

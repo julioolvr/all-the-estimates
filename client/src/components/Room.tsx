@@ -15,10 +15,13 @@ interface DataProp {
   room: IRoom;
 }
 
-interface Props {
+interface OwnProps {
   roomKey: string;
   voterId: string;
-  currentParticipant?: IParticipant;
+  onLeave: Function;
+}
+
+interface ApolloProps {
   data?: DataProp;
   subscribeToRoomEvents?: Function;
   leaveRoomMutation?: Function;
@@ -27,11 +30,27 @@ interface Props {
   resetVotesMutation?: Function;
 }
 
+type Props = OwnProps & ApolloProps;
+
 interface State {
   unsubscribe?: Function;
 }
 
 class Room extends React.Component<Props, State> {
+  onBeforeUnload = () => {
+    this.unsubscribeAndLeave();
+  }
+
+  unsubscribeAndLeave() {
+    if (this.state.unsubscribe) {
+      this.state.unsubscribe();
+      this.setState({ unsubscribe: undefined });
+    }
+
+    this.props.leaveRoomMutation();
+    this.props.onLeave();
+  }
+
   sendVote = value => {
     this.props.voteMutation({
       variables: {
@@ -59,19 +78,13 @@ class Room extends React.Component<Props, State> {
     }
   }
 
-  componentWillUnmount() {
-    // TODO: This isn't the safest place to do this, it might
-    // not be called when abruptly closing the page. I probably
-    // need to do it serverside when the subscription dies.
-    if (this.state.unsubscribe) {
-      this.state.unsubscribe();
-      this.setState({ unsubscribe: undefined });
-    }
+  componentDidMount() {
+    window.addEventListener('beforeunload', this.onBeforeUnload);
+  }
 
-    this.props.leaveRoomMutation({
-      roomKey: this.props.roomKey,
-      voterId: this.props.voterId
-    });
+  componentWillUnmount() {
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
+    this.unsubscribeAndLeave();
   }
 
   render() {
@@ -83,6 +96,11 @@ class Room extends React.Component<Props, State> {
 
     // TODO: If !voterId, show a prompt to join
     const me = data.room.participants.find(participant => participant.id === voterId);
+
+    if (!me) {
+      return <div>Loading...</div>;
+    }
+
     const myVote = data.room.votes.find(vote => vote.participant.id === me.id);
 
     return (
@@ -142,8 +160,8 @@ const Query = gql`
 `;
 
 const LeaveRoomMutation = gql`
-  mutation LeaveRoom($roomKey: String!, $voterName: String!) {
-    leave(roomKey: $roomKey, voterName: $voterName) {
+  mutation LeaveRoom($roomKey: String!) {
+    leave(roomKey: $roomKey) {
       participants {
         name
       }
@@ -192,6 +210,7 @@ const Subscription = gql`
   subscription onRoomEvent($roomKey: String!) {
     onRoomEvent(roomKey: $roomKey) {
       ... on ParticipantEvent {
+        type
         participant {
           id
           name
@@ -228,6 +247,8 @@ interface SubscriptionData {
   data?: {
     onRoomEvent: {
       participant?: IParticipant;
+      type?: 'JOINED' | 'LEFT';
+
       vote?: IVote;
       room?: IRoom;
     }
@@ -266,13 +287,23 @@ export default compose<
               let newRoom = room;
 
               if (subscriptionData.data.onRoomEvent.participant) {
-                newRoom = {
-                  ...newRoom,
-                  participants: [
-                    ...room.participants,
-                    subscriptionData.data.onRoomEvent.participant
-                  ]
-                };
+                if (subscriptionData.data.onRoomEvent.type === 'JOINED') {
+                  newRoom = {
+                    ...newRoom,
+                    participants: [
+                      ...newRoom.participants,
+                      subscriptionData.data.onRoomEvent.participant
+                    ]
+                  };
+                }
+
+                if (subscriptionData.data.onRoomEvent.type === 'LEFT') {
+                  newRoom = {
+                    ...newRoom,
+                    participants: newRoom.participants.filter(participant =>
+                      participant.id !== subscriptionData.data.onRoomEvent.participant.id)
+                  };
+                }
               }
 
               if (subscriptionData.data.onRoomEvent.room) {

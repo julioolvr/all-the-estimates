@@ -48,9 +48,18 @@ class Room implements IRoom {
     return this.addParticipant(name)
   }
 
-  async removeParticipantWithName(name: string): Promise<Participant> {
-    const removedParticipant = this.participants.find(participant => participant.name === name)
+  async removeParticipant(id: string): Promise<Participant> {
+    const removedParticipant = this.participants.find(participant => participant.id === id)
     this.participants = this.participants.filter(participant => participant !== removedParticipant)
+
+    // TODO: Remove participant's vote if present
+    pubsub.publish('onRoomEvent', {
+      roomKey: this.key,
+      onRoomEvent: {
+        type: 'LEFT',
+        participant: removedParticipant
+      }
+    })
 
     return new Promise<Participant>((resolve, reject) => {
       collection.update(

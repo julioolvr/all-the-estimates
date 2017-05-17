@@ -28,8 +28,23 @@ class Home extends React.Component<Props, State> {
     const { history } = this.props;
     const { voterName, roomKey } = this.state;
 
-    this.props.joinRoomMutation({ variables: { voterName, roomKey } })
-      .then(({ data: { join: participant }}: { data: { join: IParticipant } }) => {
+    this.props.joinRoomMutation({
+      variables: { voterName, roomKey },
+      refetchQueries: [{
+        query: gql`
+          query UpdateRoomCache($roomKey: String!) {
+            room(key: $roomKey) {
+              key
+              participants {
+                id
+                name
+              }
+            }
+          }
+        `,
+        variables: { roomKey }
+      }]
+    }).then(({ data: { join: participant }}: { data: { join: IParticipant } }) => {
         return participant;
       })
       .then(participant => {
