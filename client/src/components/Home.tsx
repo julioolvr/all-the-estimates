@@ -2,6 +2,7 @@ import * as React from 'react';
 import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
 import { withRouter } from 'react-router-dom';
+import * as Sentencer from 'sentencer';
 
 import IParticipant from '../../../common/interfaces/IParticipant';
 
@@ -20,7 +21,7 @@ interface Props {
 
 class Home extends React.Component<Props, State> {
   state = {
-    roomKey: '',
+    roomKey: Sentencer.make('{{ noun }}-{{ noun }}-{{ noun }}'),
     voterName: ''
   };
 
