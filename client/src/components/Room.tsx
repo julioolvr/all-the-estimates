@@ -45,10 +45,9 @@ class Room extends React.Component<Props, State> {
     if (this.state.unsubscribe) {
       this.state.unsubscribe();
       this.setState({ unsubscribe: undefined });
+      this.props.leaveRoomMutation();
+      this.props.onLeave();
     }
-
-    this.props.leaveRoomMutation();
-    this.props.onLeave();
   }
 
   sendVote = value => {

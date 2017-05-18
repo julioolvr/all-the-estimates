@@ -9,6 +9,7 @@ import {
 import './App.css';
 import Home from './components/Home';
 import Room from './components/Room';
+import JoinRoomPrompt from './components/JoinRoomPrompt';
 
 import IParticipant from '../../common/interfaces/IParticipant';
 
@@ -85,13 +86,26 @@ class App extends React.Component<{}, State> {
             <Route exact path="/" render={() => {
               return <Home onRoomJoined={this.onRoomJoined} />;
             }} />
-            <Route path="/:roomKey" render={({ match, location }) => (
-              <Room
-                roomKey={match.params.roomKey}
-                voterId={location.state.voterId}
-                onLeave={this.onRoomLeft}
-              />
-            )} />
+            <Route path="/:roomKey" render={({ match, location }) => {
+              const { participantId } = this.state;
+
+              if (participantId) {
+                return (
+                  <Room
+                    roomKey={match.params.roomKey}
+                    voterId={participantId}
+                    onLeave={this.onRoomLeft}
+                  />
+                );
+              } else {
+                return (
+                  <JoinRoomPrompt
+                    roomKey={match.params.roomKey}
+                    onRoomJoined={this.onRoomJoined}
+                  />
+                );
+              }
+            }} />
           </div>
         </Router>
       </ApolloProvider>
