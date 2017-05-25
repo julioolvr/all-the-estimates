@@ -4,11 +4,13 @@ import { WrapWithApollo } from 'react-apollo/src/graphql';
 
 import VoteInput from './VoteInput';
 import RoomManagement from './RoomManagement';
-import Participant from './Participant';
+import Card from './Card';
 
 import IRoom from '../../../common/interfaces/IRoom';
 import IParticipant from '../../../common/interfaces/IParticipant';
 import IVote from '../../../common/interfaces/IVote';
+
+import './Room.css';
 
 interface DataProp {
   loading: boolean;
@@ -103,8 +105,8 @@ class Room extends React.Component<Props, State> {
     const myVote = data.room.votes.find(vote => vote.participant.id === me.id);
 
     return (
-      <div>
-        <h1>Room: {roomKey}</h1>
+      <div className="Room">
+        <div className="Room__room-name">{roomKey}</div>
         <div>I am: {me.name}</div>
         <VoteInput
           disabled={!data.room.openForVoting}
@@ -116,20 +118,22 @@ class Room extends React.Component<Props, State> {
           onClose={this.closeVote}
           onReset={this.resetVotes}
         />
-        <ul>
+        <div className="Room__cards">
           {data.room.participants.map(participant => {
             const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 
             return (
-              <Participant
+              <Card
                 key={participant.id}
+                className="Room__card"
                 vote={vote}
                 participant={participant}
+                isMine={participant === me}
                 isRevealed={!data.room.openForVoting || participant === me}
               />
             );
           })}
-        </ul>
+        </div>
       </div>
     );
   }

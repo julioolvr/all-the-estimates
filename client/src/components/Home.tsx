@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import * as Sentencer from 'sentencer';
 
 import IParticipant from '../../../common/interfaces/IParticipant';
+import './Home.css';
 
 interface State {
   roomKey: string;
@@ -25,6 +26,7 @@ class Home extends React.Component<Props, State> {
     voterName: ''
   };
 
+  // TODO: Join on enter key pressed
   onJoinClick = () => {
     const { history } = this.props;
     const { voterName, roomKey } = this.state;
@@ -62,24 +64,33 @@ class Home extends React.Component<Props, State> {
 
   render() {
     return (
-      <div>
-        <label>
-          Room name:
-          <input
-            value={this.state.roomKey}
-            onChange={e => this.setState({ roomKey: e.target.value })}
-          />
-        </label>
+      <div className="Home">
+        <label className="Home--username">
+          <div className="Home--username-label">
+            Name
+          </div>
 
-        <label>
-          User name:
           <input
+            className="Home--username-input"
+            placeholder="Your name"
             value={this.state.voterName}
             onChange={e => this.setState({ voterName: e.target.value })}
           />
         </label>
 
-        <button onClick={this.onJoinClick}>
+        <label>
+          Joining room&nbsp;
+          <input
+            className="Home--room-input"
+            value={this.state.roomKey}
+            onChange={e => this.setState({ roomKey: e.target.value })}
+          />
+        </label>
+
+        <button
+          className="Home--join-button"
+          onClick={this.onJoinClick}
+        >
           Join
         </button>
       </div>

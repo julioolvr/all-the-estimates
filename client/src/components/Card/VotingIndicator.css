@@ -1,0 +1,36 @@
+@keyframes bounce {
+  0%, 30% {
+    bottom: 0;
+  }
+
+  15% {
+    bottom: .25em;
+  }
+}
+
+.VotingIndicator {
+  font-size: 50px;
+  position: relative;
+  width: 1em;
+}
+
+.VotingIndicator__dot {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  animation: bounce 1.8s infinite ease-in-out;
+}
+
+.VotingIndicator__dot--first {
+  text-align: left;
+}
+
+.VotingIndicator__dot--second {
+  text-align: center;
+  animation-delay: .4s;
+}
+
+.VotingIndicator__dot--third {
+  text-align: right;
+  animation-delay: .8s;
+}

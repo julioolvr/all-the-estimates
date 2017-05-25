@@ -1,0 +1,23 @@
+.Room {
+  height: 100%;
+}
+
+.Room__room-name {
+  --border-color: #6a6aff;
+
+  font-size: 12px;
+
+  float: right;
+  background-color: #b1b1fd;
+  border-left: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  border-bottom-left-radius: 2px;
+  padding: .5em;
+
+  color: var(--light-gray);
+}
+
+.Room__cards {
+  display: flex;
+  justify-content: space-around;
+}

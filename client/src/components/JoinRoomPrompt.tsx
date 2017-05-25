@@ -18,6 +18,7 @@ class JoinRoomPromps extends React.Component<Props, State> {
     voterName: ''
   };
 
+  // TODO: Join on enter key pressed
   onJoinClick = () => {
     const { roomKey } = this.props;
     const { voterName } = this.state;

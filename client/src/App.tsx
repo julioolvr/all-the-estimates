@@ -82,7 +82,7 @@ class App extends React.Component<{}, State> {
     return (
       <ApolloProvider client={client}>
         <Router>
-          <div>
+          <div className="App">
             <Route exact path="/" render={() => {
               return <Home onRoomJoined={this.onRoomJoined} />;
             }} />
