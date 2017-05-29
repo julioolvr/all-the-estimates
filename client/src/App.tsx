@@ -13,15 +13,18 @@ import JoinRoomPrompt from './components/JoinRoomPrompt';
 
 import IParticipant from '../../common/interfaces/IParticipant';
 
-// TODO: Take from env variable
-const wsUrl = 'ws://localhost:3000/subscriptions';
+const HOST_PROTOCOL = process.env.REACT_APP_HOST_PROTOCOL || 'http';
+const WS_PROTOCOL = process.env.REACT_APP_HOST_WS_PROTOCOL || 'ws';
+const HOST_URL = process.env.REACT_APP_HOST_URL || 'localhost:3000';
+
+const wsUrl = `${WS_PROTOCOL}://${HOST_URL}/subscriptions`;
 
 const wsClient = new SubscriptionClient(wsUrl, {
   reconnect: true
 });
 
 const networkInterface = createNetworkInterface({
-  uri: 'http://localhost:3000/graphql' // TODO: Take from env variable
+  uri: `${HOST_PROTOCOL}://${HOST_URL}/graphql`
 });
 
 const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(

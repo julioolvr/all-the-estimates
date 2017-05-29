@@ -1,8 +1,9 @@
 {
-  "name": "client",
+  "name": "all-the-estimates",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/isomorphic-fetch": "^0.0.34",
     "@types/jest": "^19.2.2",
     "@types/node": "^7.0.12",
     "@types/react": "^15.0.21",
@@ -16,14 +17,17 @@
     "graphql-tag": "^2.0.0",
     "react-apollo": "^1.1.0",
     "react-router-dom": "^4.1.1",
-    "react-scripts-ts": "1.2.0",
+    "react-scripts-ts": "^2.2.0",
     "subscriptions-transport-ws": "^0.5.5"
   },
   "scripts": {
     "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "build": "REACT_APP_HOST_PROTOCOL=https REACT_APP_HOST_WS_PROTOCOL=wss REACT_APP_HOST_URL=all-the-estimates-server.now.sh react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "eject": "react-scripts-ts eject",
+    "deploy": "npm run deploy:build && npm run deploy:push",
+    "deploy:build": "npm run build",
+    "deploy:push": "now deploy build -e NODE_ENV=production --public -n all-the-estimates"
   },
   "proxy": "http://localhost:8000"
 }
