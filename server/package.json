@@ -1,9 +1,16 @@
 {
+  "name": "all-the-estimates-server",
   "scripts": {
     "start": "nodemon -e ts --exec \"npm run compile:execute\"",
     "compile": "tsc",
-    "compile:execute": "npm run compile && node dist/server/src/index.js",
-    "compile:watch": "tsc -w"
+    "execute": "node dist/server/src/index.js",
+    "compile:execute": "npm run compile && npm run execute",
+    "compile:watch": "tsc -w",
+    "deploy": "npm run compile && now -e NODE_ENV=production --public",
+    "now-start": "npm run execute"
+  },
+  "now": {
+    "files": ["dist"]
   },
   "dependencies": {
     "@types/express": "^4.0.35",
