@@ -1,5 +1,6 @@
 import express = require('express')
 import bodyParser = require('body-parser')
+import cors = require('cors')
 import { createServer } from 'http'
 import { graphqlExpress, graphiqlExpress } from 'graphql-server-express'
 import { SubscriptionManager } from 'graphql-subscriptions'
@@ -31,6 +32,7 @@ const GRAPHQL_PATH = '/graphql'
 app.use(
   GRAPHQL_PATH,
   bodyParser.json(),
+  cors({ origin: 'https://all-the-estimates.now.sh' }),
   graphqlExpress(
     request => ({
       schema,
@@ -39,9 +41,11 @@ app.use(
   )
 )
 
+const WS_PROTOCOL = process.env.NODE_ENV === 'production' ? 'wss' : 'ws'
+
 app.use('/graphiql', graphiqlExpress({
   endpointURL: GRAPHQL_PATH,
-  subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`,
+  subscriptionsEndpoint: `${WS_PROTOCOL}://localhost:${PORT}/subscriptions`,
 }))
 
 server.listen(PORT, () => {
