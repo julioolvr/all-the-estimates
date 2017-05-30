@@ -17,6 +17,7 @@
     "express": "^4.15.3",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
+    "semantic-ui-react": "^0.68.4",
     "sentencer": "^0.1.5"
   },
   "devDependencies": {

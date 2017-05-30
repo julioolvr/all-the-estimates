@@ -7,12 +7,12 @@
 }
 
 .Home--username {
-  font-size: 4em;
+  font-size: 2em;
   margin-bottom: .5em;
 }
 
 .Home--username-label {
-  font-size: .2em;
+  font-size: .5em;
   color: var(--light-gray);
 }
 
@@ -24,10 +24,10 @@
 .Home--room-input {
   margin-bottom: 2em;
   width: 20em;
-  border-top: none;
-  border-right: none;
-  border-left: none;
   border-bottom: 1px solid #ccc;
+}
+
+.Home--room-input.transparent input {
   text-align: center;
 }
 

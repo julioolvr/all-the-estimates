@@ -3,6 +3,7 @@ import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
 import { withRouter } from 'react-router-dom';
 import * as Sentencer from 'sentencer';
+import { Button, Input } from 'semantic-ui-react';
 
 import IParticipant from '../../../common/interfaces/IParticipant';
 import './Home.css';
@@ -10,6 +11,7 @@ import './Home.css';
 interface State {
   roomKey: string;
   voterName: string;
+  loading: boolean;
 }
 
 interface Props {
@@ -23,13 +25,16 @@ interface Props {
 class Home extends React.Component<Props, State> {
   state = {
     roomKey: Sentencer.make('{{ noun }}-{{ noun }}-{{ noun }}'),
-    voterName: ''
+    voterName: '',
+    loading: false
   };
 
   // TODO: Join on enter key pressed
   onJoinClick = () => {
     const { history } = this.props;
     const { voterName, roomKey } = this.state;
+
+    this.setState({ loading: true });
 
     this.props.joinRoomMutation({
       variables: { voterName, roomKey },
@@ -59,7 +64,8 @@ class Home extends React.Component<Props, State> {
           pathname: `/${roomKey}`,
           state: { voterId: participant.id }
         });
-      });
+      })
+      .then(() => this.setState({ loading: false }));
   }
 
   render() {
@@ -70,29 +76,37 @@ class Home extends React.Component<Props, State> {
             Name
           </div>
 
-          <input
+          <Input
             className="Home--username-input"
             placeholder="Your name"
             value={this.state.voterName}
-            onChange={e => this.setState({ voterName: e.target.value })}
+            onChange={e => {
+              let event = e as React.ChangeEvent<HTMLInputElement>;
+              this.setState({ voterName: event.target.value });
+            }}
           />
         </label>
 
         <label>
           Joining room&nbsp;
-          <input
+          <Input
+            transparent
             className="Home--room-input"
             value={this.state.roomKey}
-            onChange={e => this.setState({ roomKey: e.target.value })}
+            onChange={e => {
+              let event = e as React.ChangeEvent<HTMLInputElement>;
+              this.setState({ roomKey: event.target.value });
+            }}
           />
         </label>
 
-        <button
-          className="Home--join-button"
+        <Button
+          primary
+          loading={this.state.loading}
           onClick={this.onJoinClick}
         >
           Join
-        </button>
+        </Button>
       </div>
     );
   }

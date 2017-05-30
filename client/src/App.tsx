@@ -86,29 +86,36 @@ class App extends React.Component<{}, State> {
       <ApolloProvider client={client}>
         <Router>
           <div className="App">
-            <Route exact path="/" render={() => {
-              return <Home onRoomJoined={this.onRoomJoined} />;
-            }} />
-            <Route path="/:roomKey" render={({ match }) => {
-              const { participantId } = this.state;
+            <Route
+              exact
+              path="/"
+              render={() => {
+                return <Home onRoomJoined={this.onRoomJoined} />;
+              }}
+            />
+            <Route
+              path="/:roomKey"
+              render={({ match }) => {
+                const { participantId } = this.state;
 
-              if (participantId) {
-                return (
-                  <Room
-                    roomKey={match.params.roomKey}
-                    voterId={participantId}
-                    onLeave={this.onRoomLeft}
-                  />
-                );
-              } else {
-                return (
-                  <JoinRoomPrompt
-                    roomKey={match.params.roomKey}
-                    onRoomJoined={this.onRoomJoined}
-                  />
-                );
-              }
-            }} />
+                if (participantId) {
+                  return (
+                    <Room
+                      roomKey={match.params.roomKey}
+                      voterId={participantId}
+                      onLeave={this.onRoomLeft}
+                    />
+                  );
+                } else {
+                  return (
+                    <JoinRoomPrompt
+                      roomKey={match.params.roomKey}
+                      onRoomJoined={this.onRoomJoined}
+                    />
+                  );
+                }
+              }}
+            />
           </div>
         </Router>
       </ApolloProvider>
