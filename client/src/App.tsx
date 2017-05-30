@@ -89,7 +89,7 @@ class App extends React.Component<{}, State> {
             <Route exact path="/" render={() => {
               return <Home onRoomJoined={this.onRoomJoined} />;
             }} />
-            <Route path="/:roomKey" render={({ match, location }) => {
+            <Route path="/:roomKey" render={({ match }) => {
               const { participantId } = this.state;
 
               if (participantId) {

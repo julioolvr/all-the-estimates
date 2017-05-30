@@ -2,12 +2,19 @@
   "name": "all-the-estimates",
   "version": "0.1.0",
   "private": true,
+  "now": {
+    "files": [
+      "serve-prod.js",
+      "build"
+    ]
+  },
   "dependencies": {
     "@types/isomorphic-fetch": "^0.0.34",
     "@types/jest": "^19.2.2",
     "@types/node": "^7.0.12",
     "@types/react": "^15.0.21",
     "@types/react-dom": "^0.14.23",
+    "express": "^4.15.3",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "sentencer": "^0.1.5"
@@ -25,9 +32,11 @@
     "build": "REACT_APP_HOST_PROTOCOL=https REACT_APP_HOST_WS_PROTOCOL=wss REACT_APP_HOST_URL=all-the-estimates-server.now.sh react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
+    "now-start": "node serve-prod.js",
+    "now-build": "echo \"No need to build @now\"",
     "deploy": "npm run deploy:build && npm run deploy:push",
     "deploy:build": "npm run build",
-    "deploy:push": "now deploy build -e NODE_ENV=production --public -n all-the-estimates"
+    "deploy:push": "now deploy -e NODE_ENV=production --public -n all-the-estimates"
   },
   "proxy": "http://localhost:8000"
 }
