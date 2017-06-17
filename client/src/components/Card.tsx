@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Card as SemanticCard } from 'semantic-ui-react';
 
 import VotingIndicator from './Card/VotingIndicator';
 
@@ -25,18 +26,24 @@ function Card({
   let currentVoteContent;
 
   if (vote && isRevealed) {
-    currentVoteContent = vote.value;
+    currentVoteContent = <div className="Card__content">{vote.value}</div>;
   } else if (vote) {
-    currentVoteContent = '?';
+    currentVoteContent = <div className="Card__content">?</div>;
   } else {
     currentVoteContent = <VotingIndicator />;
   }
 
   return (
-    <div className={['Card', className].join(' ')}>
-      <div className={['Card__card', vote && 'Card__card--is-active'].join(' ')}>{currentVoteContent}</div>
-      <div className="Card__participant-name">{participant.name}</div>
-    </div>
+    <SemanticCard className={['Card', className].join(' ')}>
+      <SemanticCard.Content className="Card__container">
+        <div className="Card__card">
+          {currentVoteContent}
+        </div>
+      </SemanticCard.Content>
+      <SemanticCard.Content className="Card__participant-name">
+        {participant.name}
+      </SemanticCard.Content>
+    </SemanticCard>
   );
 }
 

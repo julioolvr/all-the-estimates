@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
+import { Card as SemanticCard } from 'semantic-ui-react';
 
 import VoteInput from './VoteInput';
 import RoomManagement from './RoomManagement';
@@ -119,20 +120,22 @@ class Room extends React.Component<Props, State> {
           onReset={this.resetVotes}
         />
         <div className="Room__cards">
-          {data.room.participants.map(participant => {
-            const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
+          <SemanticCard.Group itemsPerRow={6}>
+            {data.room.participants.map(participant => {
+              const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 
-            return (
-              <Card
-                key={participant.id}
-                className="Room__card"
-                vote={vote}
-                participant={participant}
-                isMine={participant === me}
-                isRevealed={!data.room.openForVoting || participant === me}
-              />
-            );
-          })}
+              return (
+                <Card
+                  key={participant.id}
+                  className="Room__card"
+                  vote={vote}
+                  participant={participant}
+                  isMine={participant === me}
+                  isRevealed={!data.room.openForVoting || participant === me}
+                />
+              );
+            })}
+          </SemanticCard.Group>
         </div>
       </div>
     );
