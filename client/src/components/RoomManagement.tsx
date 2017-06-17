@@ -1,4 +1,7 @@
 import * as React from 'react';
+import { Button } from 'semantic-ui-react';
+
+import './RoomManagement.css';
 
 interface Props {
   isOpenForVoting: boolean;
@@ -12,9 +15,11 @@ function RoomManagement({
   onReset
 }: Props) {
   return (
-    <div>
-      <button disabled={!isOpenForVoting} onClick={() => onClose()}>Close</button>
-      <button disabled={isOpenForVoting} onClick={() => onReset()}>Reset</button>
+    <div className="RoomManagement">
+      <Button.Group>
+        <Button disabled={!isOpenForVoting} onClick={() => onClose()}>Close</Button>
+        <Button disabled={isOpenForVoting} onClick={() => onReset()}>Reset</Button>
+      </Button.Group>
     </div>
   );
 }
