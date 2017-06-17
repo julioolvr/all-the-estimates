@@ -1,4 +1,7 @@
 import * as React from 'react';
+import { Button, Input } from 'semantic-ui-react';
+
+import './VoteInput.css';
 
 interface Props {
   onVote: Function;
@@ -18,19 +21,21 @@ class VoteInput extends React.Component<Props, State> {
   render() {
     const { onVote, disabled = false } = this.props;
     return (
-      <div>
-        My vote:
-        <input
+      <div className="VoteInput">
+        <Input
           disabled={disabled}
           value={this.state.voteValue}
-          onChange={e => this.setState({ voteValue: Number(e.target.value) })}
+          onChange={e => {
+            let event = e as React.ChangeEvent<HTMLInputElement>;
+            this.setState({ voteValue: Number(event.target.value)});
+          }}
         />
-        <button
+        <Button
           disabled={disabled}
           onClick={() => onVote(this.state.voteValue)}
         >
           Vote
-        </button>
+        </Button>
       </div>
     );
   }

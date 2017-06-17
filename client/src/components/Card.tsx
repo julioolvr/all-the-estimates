@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Card as SemanticCard } from 'semantic-ui-react';
 
 import VotingIndicator from './Card/VotingIndicator';
+import VoteInput from './VoteInput';
 
 import './Card.css';
 
@@ -14,6 +15,8 @@ interface Props {
   isRevealed: boolean;
   isMine: boolean;
   className?: string;
+  openForVoting: boolean;
+  onVote: Function;
 }
 
 function Card({
@@ -21,14 +24,26 @@ function Card({
   vote,
   isMine,
   isRevealed,
+  openForVoting,
   className = '',
+  onVote,
 }: Props) {
   let currentVoteContent;
 
-  if (vote && isRevealed) {
+  if (isMine && openForVoting) {
+    currentVoteContent = (
+      <VoteInput
+        disabled={!openForVoting}
+        onVote={onVote}
+        value={vote ? vote.value : undefined}
+      />
+    );
+  } else if (vote && isRevealed) {
     currentVoteContent = <div className="Card__content">{vote.value}</div>;
   } else if (vote) {
     currentVoteContent = <div className="Card__content">?</div>;
+  } else if (isRevealed) {
+    currentVoteContent = <div className="Card__content">-</div>;
   } else {
     currentVoteContent = <VotingIndicator />;
   }
