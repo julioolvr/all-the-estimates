@@ -102,6 +102,11 @@ class Room extends React.Component<Props, State> {
       return <div>Loading...</div>;
     }
 
+    const meAndEveryoneElse = [
+      me,
+      ...data.room.participants.filter(participant => participant !== me)
+    ];
+
     return (
       <div className="Room">
         <div className="Room__room-name">{roomKey}</div>
@@ -115,7 +120,7 @@ class Room extends React.Component<Props, State> {
 
         <div className="Room__cards">
           <SemanticCard.Group itemsPerRow={6}>
-            {data.room.participants.map(participant => {
+            {meAndEveryoneElse.map(participant => {
               const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 
               return (
