@@ -7,9 +7,8 @@ import {
 } from 'react-router-dom';
 
 import './App.css';
-import Home from './components/Home';
+import JoinRoom from './components/JoinRoom';
 import Room from './components/Room';
-import JoinRoomPrompt from './components/JoinRoomPrompt';
 
 import IParticipant from '../../common/interfaces/IParticipant';
 
@@ -93,7 +92,7 @@ class App extends React.Component<{}, State> {
               exact
               path="/"
               render={() => {
-                return <Home onRoomJoined={this.onRoomJoined} />;
+                return <JoinRoom onRoomJoined={this.onRoomJoined} />;
               }}
             />
             <Route
@@ -111,7 +110,7 @@ class App extends React.Component<{}, State> {
                   );
                 } else {
                   return (
-                    <JoinRoomPrompt
+                    <JoinRoom
                       roomKey={match.params.roomKey}
                       onRoomJoined={this.onRoomJoined}
                     />

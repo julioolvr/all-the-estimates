@@ -6,7 +6,7 @@ import * as Sentencer from 'sentencer';
 import { Button, Input } from 'semantic-ui-react';
 
 import IParticipant from '../../../common/interfaces/IParticipant';
-import './Home.css';
+import './JoinRoom.css';
 
 interface State {
   roomKey: string;
@@ -16,13 +16,14 @@ interface State {
 
 interface Props {
   onRoomJoined: Function;
+  roomKey?: string;
   joinRoomMutation?: Function;
   history?: {
     push: Function;
   };
 }
 
-class Home extends React.Component<Props, State> {
+class JoinRoom extends React.Component<Props, State> {
   state = {
     roomKey: Sentencer.make('{{ noun }}-{{ noun }}-{{ noun }}'),
     voterName: '',
@@ -32,7 +33,8 @@ class Home extends React.Component<Props, State> {
   // TODO: Join on enter key pressed
   onJoinClick = () => {
     const { history } = this.props;
-    const { voterName, roomKey } = this.state;
+    const { voterName } = this.state;
+    const roomKey = this.props.roomKey || this.state.roomKey;
 
     this.setState({ loading: true });
 
@@ -69,15 +71,17 @@ class Home extends React.Component<Props, State> {
   }
 
   render() {
+    const roomKey = this.props.roomKey || this.state.roomKey;
+
     return (
-      <div className="Home">
-        <label className="Home--username">
-          <div className="Home--username-label">
+      <div className="JoinRoom">
+        <label className="JoinRoom--username">
+          <div className="JoinRoom--username-label">
             Name
           </div>
 
           <Input
-            className="Home--username-input"
+            className="JoinRoom--username-input"
             placeholder="Your name"
             value={this.state.voterName}
             onChange={e => {
@@ -91,8 +95,9 @@ class Home extends React.Component<Props, State> {
           Joining room&nbsp;
           <Input
             transparent
-            className="Home--room-input"
-            value={this.state.roomKey}
+            className="JoinRoom--room-input"
+            value={roomKey}
+            disabled={!!this.props.roomKey}
             onChange={e => {
               let event = e as React.ChangeEvent<HTMLInputElement>;
               this.setState({ roomKey: event.target.value });
@@ -123,9 +128,9 @@ const JoinRoomMutation = gql`
 
 export default compose<
   WrapWithApollo,
-  typeof Home,
-  typeof Home
+  typeof JoinRoom,
+  typeof JoinRoom
 >(
   graphql(JoinRoomMutation, { name: 'joinRoomMutation' }),
   withRouter
-)(Home);
+)(JoinRoom);
