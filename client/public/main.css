@@ -1,0 +1,13 @@
+body.main-container {
+  background-color: #81C89A;
+  background-image: url("landscape.jpg");
+  background-position: bottom center;
+  background-repeat: no-repeat;
+}
+
+@media (min-resolution: 2dppx) {
+  body.main-container {
+    background-image: url("landscape2x.jpg");
+    background-size: 50%;
+  }
+}
