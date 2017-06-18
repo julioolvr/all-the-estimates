@@ -110,7 +110,6 @@ class Room extends React.Component<Props, State> {
     return (
       <div className="Room">
         <div className="Room__room-name">{roomKey}</div>
-        <div>I am: {me.name}</div>
 
         <RoomManagement
           isOpenForVoting={data.room.openForVoting}

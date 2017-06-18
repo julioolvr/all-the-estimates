@@ -13,6 +13,10 @@
   color: #dadada;
 }
 
+.Card__card--is-mine {
+  background-color: #009a8c;
+}
+
 .Card__content {
   font-size: 50px;
   position: relative;
@@ -23,4 +27,8 @@
 .Card__participant-name {
   text-align: center;
   color: gray;
+}
+
+.Card__participant-name--is-mine {
+  font-weight: bold;
 }

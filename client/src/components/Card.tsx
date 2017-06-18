@@ -51,11 +51,13 @@ function Card({
   return (
     <SemanticCard className={['Card', className].join(' ')}>
       <SemanticCard.Content className="Card__container">
-        <div className="Card__card">
+        <div
+          className={['Card__card', isMine && 'Card__card--is-mine'].filter(Boolean).join(' ')}>
           {currentVoteContent}
         </div>
       </SemanticCard.Content>
-      <SemanticCard.Content className="Card__participant-name">
+      <SemanticCard.Content
+        className={['Card__participant-name', isMine && 'Card__participant-name--is-mine'].filter(Boolean).join(' ')}>
         {participant.name}
       </SemanticCard.Content>
     </SemanticCard>
