@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { gql, graphql, compose } from 'react-apollo';
 import { WrapWithApollo } from 'react-apollo/src/graphql';
-import { Card as SemanticCard } from 'semantic-ui-react';
+import { Card as SemanticCard, SemanticWIDTHS } from 'semantic-ui-react';
 
 import RoomManagement from './RoomManagement';
 import Card from './Card';
@@ -107,6 +107,25 @@ class Room extends React.Component<Props, State> {
       ...data.room.participants.filter(participant => participant !== me)
     ];
 
+    let cardsPerRow = 6;
+
+    // TODO: Change this on resize, or if possible do it automatically through CSS
+    if (window.innerWidth < 1250) {
+      cardsPerRow = 5;
+    }
+
+    if (window.innerWidth < 1030) {
+      cardsPerRow = 4;
+    }
+
+    if (window.innerWidth < 820) {
+      cardsPerRow = 3;
+    }
+
+    if (window.innerWidth < 630) {
+      cardsPerRow = 2;
+    }
+
     return (
       <div className="Room">
         <div className="Room__room-name">{roomKey}</div>
@@ -118,7 +137,7 @@ class Room extends React.Component<Props, State> {
         />
 
         <div className="Room__cards">
-          <SemanticCard.Group itemsPerRow={6}>
+          <SemanticCard.Group itemsPerRow={cardsPerRow as SemanticWIDTHS}>
             {meAndEveryoneElse.map(participant => {
               const vote = data.room.votes.find(roomVote => roomVote.participant.id === participant.id);
 

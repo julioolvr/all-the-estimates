@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "react-scripts-ts start",
-    "build": "REACT_APP_HOST_PROTOCOL=https REACT_APP_HOST_WS_PROTOCOL=wss REACT_APP_HOST_URL=all-the-estimates-server.now.sh react-scripts-ts build",
+    "build": "REACT_APP_HOST_PROTOCOL=https REACT_APP_HOST_WS_PROTOCOL=wss REACT_APP_HOST_DOMAIN=all-the-estimates-server.now.sh REACT_APP_HOST_PORT=80 react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "now-start": "node serve-prod.js",

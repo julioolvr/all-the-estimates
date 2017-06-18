@@ -22,14 +22,16 @@ class VoteInput extends React.Component<Props, State> {
     const { onVote, disabled = false } = this.props;
     return (
       <div className="VoteInput">
-        <Input
-          disabled={disabled}
-          value={this.state.voteValue}
-          onChange={e => {
-            let event = e as React.ChangeEvent<HTMLInputElement>;
-            this.setState({ voteValue: Number(event.target.value)});
-          }}
-        />
+        <div>
+          <Input
+            disabled={disabled}
+            value={this.state.voteValue}
+            onChange={e => {
+              let event = e as React.ChangeEvent<HTMLInputElement>;
+              this.setState({ voteValue: Number(event.target.value)});
+            }}
+          />
+        </div>
         <Button
           disabled={disabled}
           onClick={() => onVote(this.state.voteValue)}
